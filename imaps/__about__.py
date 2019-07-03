@@ -1,6 +1,6 @@
 """Central place for package metadata."""
 
-from pkg_resources import DistributionNotFound, get_distribution
+from pkg_resources import DistributionNotFound, get_distribution  # pylint: disable=unused-import
 
 # NOTE: We use __title__ instead of simply __name__ since the latter would
 #       interfere with a global variable __name__ denoting object's name.
