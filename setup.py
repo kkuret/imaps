@@ -34,6 +34,7 @@ setuptools.setup(
         'pybedtools',
         'seaborn',
         'sklearn',
+        'resdk>=11.0.1',
    ],
     extras_require={
         'docs': ['sphinx_rtd_theme'],

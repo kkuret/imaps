@@ -6,3 +6,4 @@ recursive-include docs docs/images *.py *.rst *.jpg *.png
 include pyproject.toml
 include tox.ini
 recursive-include imaps/tests *.py
+recursive-include imaps/scripts *.py
