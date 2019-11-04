@@ -30,8 +30,10 @@ setuptools.setup(
     install_requires=[
         'matplotlib',
         'numpy',
-        'pandas',
+        'pandas==0.24.2',
+        'plumbum',
         'pybedtools',
+        'scipy',
         'seaborn',
         'sklearn',
         'resdk>=11.0.1',
