@@ -759,7 +759,7 @@ def plot_positional_distribution(df_in, df_sum, c_dict, c_rank, name, cluster_re
 
 
 def run(peak_file, sites_file, genome, genome_fai, regions_file, window, window_distal, kmer_length, top_n,
-        percentile, min_relativ_occurence, clusters, smoothing, all_outputs=False):
+        percentile, min_relativ_occurence, clusters, smoothing, all_outputs=False, regions=None):
     """Start the analysis.
 
     Description of parameters:
@@ -784,6 +784,9 @@ def run(peak_file, sites_file, genome, genome_fai, regions_file, window, window_
     - all_outputs: controls the amount of outputs produced in the analysis
     """
     start = time.time()
+    if regions is None:
+        regions = REGIONS
+    assert set(regions).issubset(set(REGIONS))
     sample_name = get_name(sites_file)
     global TEMP_PATH
     TEMP_PATH = './TEMP{}/'.format(randint(10 ** 6, 10 ** 7))
@@ -810,7 +813,7 @@ def run(peak_file, sites_file, genome, genome_fai, regions_file, window, window_
     checkpoint1 = time.time()
     df_xn = get_all_sites(sites_file)
     print(f'{len(df_xn)} total sites. All sites taging runtime: {((time.time() - checkpoint1) / 60):.2f} min')
-    for region in REGIONS:
+    for region in regions:
         region_start = time.time()
         # Parse sites file and keep only parts that intersect with given region
         df_sites = df_txn.loc[df_txn['feature'].isin(REGION_SITES[region])]
