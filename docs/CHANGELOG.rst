@@ -12,3 +12,4 @@ Unreleased
 Added
 -----
 - Add kmers analysis to imaps/sandbox
+- Add contributing docs
