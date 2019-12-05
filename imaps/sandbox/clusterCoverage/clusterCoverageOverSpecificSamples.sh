@@ -38,7 +38,7 @@ cat ${folder}/${stem}_${cluster_dist}_nearestTo.bed ${folder}/${stem}_${cluster_
 # For each crosslink file get the coverage over the joint clusters
 for file in $file_xlsites; do
 	echo $file
-	filename=$(basename ${file})
+	filename=$(basename ${file} | cut -f 1 -d '.')
 	echo $filename
 	bedtools sort -i ${file} > ${filename}.sorted
 	bedtools map -a ${folder}/${stem}_${cluster_dist}_merged_3_clusters.bed -b ${filename}.sorted -c 5 -o sum -s > ${folder}/${filename}.mergedClusterCoverage.${cluster_dist}.bed
