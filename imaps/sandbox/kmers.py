@@ -151,11 +151,8 @@ def filter_cds_utr_ncrna(df_in):
     cds = df_in.region == 'CDS'
     utr3 = df_in.region == 'UTR3'
     ncrna = df_in.region == 'ncRNA'
-    longer = df_in.end - df_in.start >= 300
-    short = df_in.end - df_in.start >= 100
-    df_out = df_in[(utr5 & longer) | (cds & short) | (utr3 & longer) | ncrna].copy()
-    df_out.loc[df_out['region'] == 'UTR3', ['start']] = df_out.start + 30
-    df_out.loc[df_out['region'] == 'UTR5', ['end']] = df_out.end - 30
+    size = df_in.end - df_in.start >= 100
+    df_out = df_in[(utr5 & size) | (cds & size) | (utr3 & size) | ncrna].copy()
     df_out.loc[df_out['region'] == 'CDS', ['start']] = df_out.start + 30
     df_out.loc[df_out['region'] == 'CDS', ['end']] = df_out.end - 30
     return df_out
