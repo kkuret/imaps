@@ -336,9 +336,9 @@ def get_threshold_sites(s_file, percentile=0.7):
         print(f'Thresholding {region}')
         region_threshold_cp = time.time()
         df_reg = intersect_merge_info(region, s_file)
-        print(f'lenght of df_reg for {region} is: {len(df_reg)}')
         if df_reg is None:
             return
+        print(f'lenght of df_reg for {region} is: {len(df_reg)}')
         if region == 'cds_utr_ncrna':
             df_reg.name = df_reg.attributes.map(lambda x: x.split(';')[1].split(' ')[1].strip('"'))
             df_reg['quantile'] = df_reg['name'].map(df_reg.groupby(['name']).quantile(q=percentile)['score'])
