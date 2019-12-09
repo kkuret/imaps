@@ -1,5 +1,8 @@
 """Analysis of kmers located around locations of interest.
+<<<<<<< HEAD
 
+=======
+>>>>>>> 50361081a254d0486babc54f8fd90ace1036869d
 First step is regional thresholding to obtain thresholded crosslinks (txn).
 This approach takes crosslinks in all peaks within a region to define
 threshold and so introduces an element of intra-regional comparison.
@@ -107,7 +110,10 @@ TEMP_PATH = None
 def to_dataframe_fixed(self, *args, **kwargs):
     """
     Create a pandas.DataFrame, passing args and kwargs to pandas.read_csv.
+<<<<<<< HEAD
 
+=======
+>>>>>>> 50361081a254d0486babc54f8fd90ace1036869d
     This function overrides pybedtools function to avoid FutureWarning:
     read_table is deprecated, use read_csv instead... Pandas must be
     imported as pd, it is advisable to specify dtype and names as well.
@@ -146,16 +152,24 @@ def parse_region_to_df(region_file):
 
 
 def filter_cds_utr_ncrna(df_in):
+<<<<<<< HEAD
     """Filter regions CDS, UTR5, UTR3 and ncRNA by size and trim."""
+=======
+>>>>>>> 50361081a254d0486babc54f8fd90ace1036869d
     utr5 = df_in.region == 'UTR5'
     cds = df_in.region == 'CDS'
     utr3 = df_in.region == 'UTR3'
     ncrna = df_in.region == 'ncRNA'
+<<<<<<< HEAD
     longer = df_in.end - df_in.start >= 300
     short = df_in.end - df_in.start >= 100
     df_out = df_in[(utr5 & longer) | (cds & short) | (utr3 & longer) | ncrna].copy()
     df_out.loc[df_out['region'] == 'UTR3', ['start']] = df_out.start + 30
     df_out.loc[df_out['region'] == 'UTR5', ['end']] = df_out.end - 30
+=======
+    size = df_in.end - df_in.start >= 100
+    df_out = df_in[(utr5 & size) | (cds & size) | (utr3 & size) | ncrna].copy()
+>>>>>>> 50361081a254d0486babc54f8fd90ace1036869d
     df_out.loc[df_out['region'] == 'CDS', ['start']] = df_out.start + 30
     df_out.loc[df_out['region'] == 'CDS', ['end']] = df_out.end - 30
     return df_out
@@ -189,7 +203,10 @@ def get_regions_map(regions_file):
 
 def remove_chr(df_in, chr_sizes, chr_name='chrM'):
     """Remove chromosomes that are not in genome annotations.
+<<<<<<< HEAD
 
+=======
+>>>>>>> 50361081a254d0486babc54f8fd90ace1036869d
     Also removes ``chr_name`` from DataFrame.
     """
     df_chr_sizes = pd.read_csv(
@@ -264,7 +281,10 @@ def get_complement(interval_file, chrsizes_file):
 
 def cut_per_chrom(chrom, df_p, df_m, df_peaks_p, df_peaks_m):
     """Split data by strand then apply pandas cut to each strand.
+<<<<<<< HEAD
 
+=======
+>>>>>>> 50361081a254d0486babc54f8fd90ace1036869d
     Pandas cut uses IntervalIndex (done from the peaks file) to
     assign each site its peak. Finally merges strands.
     """
@@ -327,7 +347,10 @@ def intersect_merge_info(region, s_file):
 
 def get_threshold_sites(s_file, percentile=0.7):
     """Apply crosslink filtering based on dynamical thresholds.
+<<<<<<< HEAD
 
+=======
+>>>>>>> 50361081a254d0486babc54f8fd90ace1036869d
     Regions for thresholds are defined as follows: introns and
     intergenic regions are each idts own region, for CDS, UTR and ncRNA
     each gene is a region. After region determination threshold based on
@@ -402,7 +425,10 @@ def count_kmers(sequences, k_length):
 
 def pos_count_kmer(seqs, k_length, window, kmer_list=False):
     """Get number of occurences of each kmer for each position.
+<<<<<<< HEAD
 
+=======
+>>>>>>> 50361081a254d0486babc54f8fd90ace1036869d
     Alternativly, if kmer_list is defined, it returns positional counts
     only for kmers in the list.
     """
@@ -452,7 +478,10 @@ def get_max_pos(pos_count, window_peak_l=15, window_peak_r=15):
 
 def get_subcounts(pos_c, max_p, ext=5):
     """Return shrunk positional distribution.
+<<<<<<< HEAD
 
+=======
+>>>>>>> 50361081a254d0486babc54f8fd90ace1036869d
     That is  from -ext to +ext around max value as defined in mp.
     """
     pos_c_out = {x: {} for x in pos_c}
@@ -502,7 +531,10 @@ def get_top_n_kmers(kmer_count, num):
 
 def get_clustering(kmer_pos_count, clustering_pm, smoot=6, clust=3):
     """Smoothen positional data for each kmer and then cluster kmers.
+<<<<<<< HEAD
 
+=======
+>>>>>>> 50361081a254d0486babc54f8fd90ace1036869d
     Prior to clustering PCA is ran to reduce number of dimensions. Return smooth
     dataframe and a dictionary of cluster with belonging kmers.
     """
@@ -668,7 +700,10 @@ def chose_best_consensus(consensuses, kmer_list):
 
 def get_clusters_name(c_dict):
     """Try to find a consensus sequence in a cluster of kmers.
+<<<<<<< HEAD
 
+=======
+>>>>>>> 50361081a254d0486babc54f8fd90ace1036869d
     When not possible returns the bases of most enriched kmer. In case of
     duplicate names '_1' is appended to each duplicate.
     """
@@ -721,7 +756,10 @@ def get_cluster_wide_sum(topkmer_pos_count, c_dict):
 
 def plot_positional_distribution(df_in, df_sum, c_dict, c_rank, name, cluster_rename, region):
     """Plot each cluster on its own plot.
+<<<<<<< HEAD
 
+=======
+>>>>>>> 50361081a254d0486babc54f8fd90ace1036869d
     Also, plot combining the averages of clusters over a larger window.
     """
     c_num = len(c_dict)
@@ -761,7 +799,10 @@ def plot_positional_distribution(df_in, df_sum, c_dict, c_rank, name, cluster_re
 def run(peak_file, sites_file, genome, genome_fai, regions_file, window, window_distal, kmer_length, top_n,
         percentile, min_relativ_occurence, clusters, smoothing, all_outputs=False, regions=None):
     """Start the analysis.
+<<<<<<< HEAD
 
+=======
+>>>>>>> 50361081a254d0486babc54f8fd90ace1036869d
     Description of parameters:
     - peak_file: intervals of crosslinks in BED file format
     - sites_file: crosslinks in BED file format
