@@ -7,3 +7,4 @@ include pyproject.toml
 include tox.ini
 recursive-include imaps/tests *.py
 recursive-include imaps/scripts *.py
+recursive-include imaps/sandbox *.R *.sh
