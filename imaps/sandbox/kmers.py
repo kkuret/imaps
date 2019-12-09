@@ -693,7 +693,9 @@ def get_clusters_name(c_dict):
                     elif len(base) > 1:
                         final_list.append(f'[{"".join(base)}]')
                 final_str = ''.join(final_list).replace('ACGU', 'N')
-                if final_list and (final_str not in c_con_dict.values()):
+                if len(final_list) == 1:
+                    c_con_dict[cluster_id] = kmers_list[0]
+                elif final_list and (final_str not in c_con_dict.values()):
                     c_con_dict[cluster_id] = final_str
                 elif final_list and (final_str in c_con_dict.values()):
                     while final_str in c_con_dict.values():
@@ -911,7 +913,7 @@ def run(peak_file, sites_file, genome, genome_fai, regions_file, window, window_
         # occurences for each kmer on relevant positions and add them to a list
         # for calculation of averages and standard deviations
         random_aroxn = []
-        for _ in range(30):
+        for _ in range(100):
             random_seqs = random.sample(reference_sequences, len(sites))
             random_kmer_pos_count_t = pos_count_kmer(random_seqs, kmer_length, window)
             random_kmer_pos_count = {key.replace('T', 'U'): value for key, value in random_kmer_pos_count_t.items()}
@@ -984,7 +986,7 @@ def run(peak_file, sites_file, genome, genome_fai, regions_file, window, window_
         exported_columns = [i for i in range(-48, 51)]
         df_kmer_occ_per_txl = df_kmer_occ_per_txl[exported_columns]
         df_out = pd.merge(df_out, df_kmer_occ_per_txl, left_index=True, right_index=True, how='outer')
-        df_out.to_csv(f'./results/{sample_name}_{kmer_length}mer_{region}.tsv', sep='\t')
+        df_out.to_csv(f'./results/{sample_name}_{kmer_length}mer_{region}.tsv', sep='\t', float_format='%.8f')
         kmer_occ_per_txl_ln = {x: {} for x in kmer_occ_per_txl}
         for motif, pos_m in kmer_occ_per_txl.items():
             for pos, count in pos_m.items():
