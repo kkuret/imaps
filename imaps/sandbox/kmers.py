@@ -161,6 +161,7 @@ def filter_cds_utr_ncrna(df_in):
     utr3 = df_in.region == 'UTR3'
     ncrna = df_in.region == 'ncRNA'
 <<<<<<< HEAD
+<<<<<<< HEAD
     longer = df_in.end - df_in.start >= 300
     short = df_in.end - df_in.start >= 100
     df_out = df_in[(utr5 & longer) | (cds & short) | (utr3 & longer) | ncrna].copy()
@@ -170,6 +171,10 @@ def filter_cds_utr_ncrna(df_in):
     size = df_in.end - df_in.start >= 100
     df_out = df_in[(utr5 & size) | (cds & size) | (utr3 & size) | ncrna].copy()
 >>>>>>> 50361081a254d0486babc54f8fd90ace1036869d
+=======
+    size = df_in.end - df_in.start >= 100
+    df_out = df_in[(utr5 & size) | (cds & size) | (utr3 & size) | ncrna].copy()
+>>>>>>> 3acb588a9bf38fb3dbd8626770b6a7166238268e
     df_out.loc[df_out['region'] == 'CDS', ['start']] = df_out.start + 30
     df_out.loc[df_out['region'] == 'CDS', ['end']] = df_out.end - 30
     return df_out
@@ -362,9 +367,9 @@ def get_threshold_sites(s_file, percentile=0.7):
         print(f'Thresholding {region}')
         region_threshold_cp = time.time()
         df_reg = intersect_merge_info(region, s_file)
-        print(f'lenght of df_reg for {region} is: {len(df_reg)}')
         if df_reg is None:
             return
+        print(f'lenght of df_reg for {region} is: {len(df_reg)}')
         if region == 'cds_utr_ncrna':
             df_reg.name = df_reg.attributes.map(lambda x: x.split(';')[1].split(' ')[1].strip('"'))
             df_reg['quantile'] = df_reg['name'].map(df_reg.groupby(['name']).quantile(q=percentile)['score'])
