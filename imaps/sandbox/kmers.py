@@ -637,7 +637,6 @@ def chose_best_consensus(consensuses, kmer_list):
     for kmer in kmer_list:
         for cons in top_scored:
             cons_flat = [i[0] for i in cons]
-            print("".join(cons_flat))
             if ''.join(cons_flat) in kmer:
                 return cons
             cons_minus1start = cons[1:]
@@ -754,7 +753,7 @@ def plot_positional_distribution(df_in, df_sum, c_dict, c_rank, name, cluster_re
         xlabel=xlabel, ylabel='Kmer cluster occurence (%)', title='Summed occurrence of kmers in each cluster')
     axs[axs_x_sumplt, axs_y_sumplt].set_xlim(-150, 100)
     sns.lineplot(data=df_ordered, ax=axs[axs_x_sumplt, axs_y_sumplt], ci=None, **lineplot_kwrgs)
-    fig.savefig('./results/' + name + '.pdf', format='pdf')
+    fig.savefig(f'./results/{name}_{region}.pdf', format='pdf')
 
 
 def run(peak_file, sites_file, genome, genome_fai, regions_file, window, window_distal, kmer_length, top_n,
@@ -996,7 +995,7 @@ def run(peak_file, sites_file, genome, genome_fai, regions_file, window, window_
         plot_selection = {k: plot_selection_unsorted[k] for k in top_kmers}
         df_smooth, clusters_dict = get_clustering(plot_selection, kmer_occ_per_txl_ln, smoothing, clusters)
         # for meta analysis clusters are also output in a file
-        with open('./results/{}_clusters.csv'.format(sample_name), 'w', newline='') as file:
+        with open(f'./results/{sample_name}_{region}_clusters.csv', 'w', newline='') as file:
             writer = csv.writer(file, lineterminator='\n')
             for key, val in clusters_dict.items():
                 writer.writerow([key, val])
