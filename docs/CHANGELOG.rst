@@ -9,6 +9,10 @@ All notable changes to this project are documented in this file.
 Unreleased
 ==========
 
+Added
+-----
+- Add contributing guidelines for proposing a change
+
 Changed
 -------
 - Shift distributions by -1 to make kmer positions more intuitive

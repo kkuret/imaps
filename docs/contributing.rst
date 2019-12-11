@@ -37,6 +37,44 @@ Prepare imaps for development::
 
 .. _imaps's git repository: https://github.com/jernejule/imaps
 
+Contributing a change
+=====================
+
+.. note::
+
+    It is assumed that your remote is named ``origin`` and the name of main
+    remote is ``main``.
+
+Pull latest version of master branch from main::
+
+    git pull main master
+
+Checkout a branch where you can develop your change::
+
+    git checkout -b <branch-name>
+
+Develop code and add it to staging area::
+
+    git add .
+
+Commit the change and make a `well written`_  commit message::
+
+    git commit -m "<commit message>"
+
+Make sure your code is :ref:`passing tests <running-tests>`.
+
+When you're ready, push changes to your remote::
+
+    git push --set-upstream origin <branch-name>
+
+Finally, create a `pull request`_. You might need some iterations with
+maintainers of the repository until your code is merged.
+
+.. _well written: https://chris.beams.io/posts/git-commit/
+.. _pull request: https://packaging.python.org/en/latest/distributing/#semantic-versioning-preferred
+
+.. _running-tests:
+
 Running tests
 =============
 
