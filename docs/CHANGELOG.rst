@@ -6,6 +6,15 @@ All notable changes to this project are documented in this file.
 
 
 ==================
+0.2.1 - 2019-12-11
+==================
+
+Fixed
+-----
+- Another set of smaller fixes in kmers analysis
+
+
+==================
 0.2.0 - 2019-12-09
 ==================
 
