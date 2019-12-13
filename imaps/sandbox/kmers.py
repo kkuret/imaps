@@ -415,7 +415,7 @@ def pos_count_kmer(seqs, k_length, window, kmer_list=False):
     for sequence in seqs:
         for i in range(k_length, len(sequence) - k_length):
             kmer = sequence[i: i + k_length]
-            relative_pos = i - window - k_length + shift
+            relative_pos = i - window - k_length + shift - 1
             try:
                 kmer_pos_count[kmer][relative_pos] += 1
             except KeyError:

@@ -5,6 +5,15 @@ Change Log
 All notable changes to this project are documented in this file.
 
 
+==========
+Unreleased
+==========
+
+Changed
+-------
+- Shift distributions by -1 to make kmer positions more intuitive
+
+
 ==================
 0.2.1 - 2019-12-11
 ==================
