@@ -53,6 +53,12 @@ setuptools.setup(
             'twine',
         ],
     },
+    entry_points={
+        'console_scripts': [
+            'check-assets = imaps.scripts.check_assets:main',
+        ],
+    },
+
     classifiers=[
         'Development Status :: 4 - Beta',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
