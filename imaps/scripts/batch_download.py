@@ -60,7 +60,8 @@ SUPPORTED_TYPES = [
 
 def parse_arguments():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-c', '--collection', required=True, help="Collection name.")
     parser.add_argument(
         '-t',
@@ -72,7 +73,8 @@ def parse_arguments():
         '-d',
         '--directory',
         default=None,
-        help="Directory into which to download files. If not given, download to current working directory.",
+        help="Directory into which to download files. If not given, download to current working "
+             "directory.",
     )
     return parser.parse_args()
 
