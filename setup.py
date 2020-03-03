@@ -54,11 +54,13 @@ setuptools.setup(
             'pytest-cov',
             'setuptools_scm',
             'twine',
+            'ngs-test-utils',
         ],
     },
     entry_points={
         'console_scripts': [
             'check-assets = imaps.scripts.check_assets:main',
+            'imaps-sites = imaps.operations.sites:Sites.cli',
         ],
     },
 
