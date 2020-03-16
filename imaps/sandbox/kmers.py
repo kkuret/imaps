@@ -372,6 +372,15 @@ def get_all_sites(s_file):
     return df_out.sort_values(by=['chrom', 'start', 'strand'], ascending=[True, True, True]).reset_index(drop=True)
 
 
+def subsample_region(df_in, region, threshold):
+    """Subsample crosslinks to save memory and time while running."""
+    if len(df_in) > threshold:
+        print(f'Subsampling {region} crosslinks, {threshold} randomly selected crosslinks used.')
+        return df_in.sample(threshold, random_state=4242, axis=0)
+    else:
+        return df_in
+
+
 def get_sequences(sites, fasta, fai, window_l, window_r, merge_overlaps=False):
     """Get genome sequences around positions defined in sites."""
     sites = pbt.BedTool(sites).sort()
@@ -757,7 +766,7 @@ def plot_positional_distribution(df_in, df_sum, c_dict, c_rank, name, cluster_re
 
 
 def run(peak_file, sites_file, genome, genome_fai, regions_file, window, window_distal, kmer_length, top_n,
-        percentile, min_relativ_occurence, clusters, smoothing, all_outputs=False, regions=None):
+        percentile, min_relativ_occurence, clusters, smoothing, all_outputs=False, regions=None, subsample=True):
     """Start the analysis.
 
     Description of parameters:
@@ -818,6 +827,10 @@ def run(peak_file, sites_file, genome, genome_fai, regions_file, window, window_
         print(f'{len(df_sites)} thresholded sites on {region}')
         df_xn_region = df_xn.loc[df_xn['feature'].isin(REGION_SITES[region])]
         print(f'{len(df_xn_region)} all sites on {region}')
+        # subsample in order to keer RAM and time complexity reasonable
+        if subsample:
+            df_sites = subsample_region(df_sites, region, 1000000)
+            df_xn_region = subsample_region(df_xn_region, region, 3000000)
         sites = pbt.BedTool.from_dataframe(
             df_sites[['chrom', 'start', 'end', 'name', 'score', 'strand']])
         if all_outputs:
@@ -1025,4 +1038,3 @@ def run(peak_file, sites_file, genome, genome_fai, regions_file, window, window_
     shutil.rmtree(TEMP_PATH)
     pbt.cleanup()
     print(f'Analysis total runtime {((time.time() - start) / 60):.2f}')
-    
