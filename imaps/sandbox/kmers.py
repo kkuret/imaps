@@ -717,7 +717,7 @@ def get_cluster_wide_sum(topkmer_pos_count, c_dict):
     return pd.concat(clusters, axis=1).rolling(5, center=True).mean().dropna()
 
 
-def plot_positional_distribution(df_in, df_sum, c_dict, c_rank, name, cluster_rename, region):
+def plot_positional_distribution(df_in, df_sum, c_dict, c_rank, name, cluster_rename, region, kmer_length):
     """Plot each cluster on its own plot.
 
     Also, plot combining the averages of clusters over a larger window.
@@ -753,7 +753,7 @@ def plot_positional_distribution(df_in, df_sum, c_dict, c_rank, name, cluster_re
         xlabel=xlabel, ylabel='Kmer cluster occurence (%)', title='Summed occurrence of kmers in each cluster')
     axs[axs_x_sumplt, axs_y_sumplt].set_xlim(-150, 100)
     sns.lineplot(data=df_ordered, ax=axs[axs_x_sumplt, axs_y_sumplt], ci=None, **lineplot_kwrgs)
-    fig.savefig(f'./results/{name}_{region}.pdf', format='pdf')
+    fig.savefig(f'./results/{name}_{kmer_length}mer_{region}.pdf', format='pdf')
 
 
 def run(peak_file, sites_file, genome, genome_fai, regions_file, window, window_distal, kmer_length, top_n,
@@ -985,7 +985,8 @@ def run(peak_file, sites_file, genome, genome_fai, regions_file, window, window_
         exported_columns = [i for i in range(-48, 51)]
         df_kmer_occ_per_txl = df_kmer_occ_per_txl[exported_columns]
         df_out = pd.merge(df_out, df_kmer_occ_per_txl, left_index=True, right_index=True, how='outer')
-        df_out.to_csv(f'./results/{sample_name}_{kmer_length}mer_{region}.tsv', sep='\t', float_format='%.8f')
+        df_out.to_csv(
+            f'./results/{sample_name}_{kmer_length}mer_distribution_{region}.tsv', sep='\t', float_format='%.8f')
         kmer_occ_per_txl_ln = {x: {} for x in kmer_occ_per_txl}
         for motif, pos_m in kmer_occ_per_txl.items():
             for pos, count in pos_m.items():
@@ -995,14 +996,15 @@ def run(peak_file, sites_file, genome, genome_fai, regions_file, window, window_
         plot_selection = {k: plot_selection_unsorted[k] for k in top_kmers}
         df_smooth, clusters_dict = get_clustering(plot_selection, kmer_occ_per_txl_ln, smoothing, clusters)
         # for meta analysis clusters are also output in a file
-        with open(f'./results/{sample_name}_{region}_clusters.csv', 'w', newline='') as file:
-            writer = csv.writer(file, lineterminator='\n')
-            for key, val in clusters_dict.items():
-                writer.writerow([key, val])
+        if all_outputs:
+            with open(f'./results/{sample_name}_{region}_clusters.csv', 'w', newline='') as file:
+                writer = csv.writer(file, lineterminator='\n')
+                for key, val in clusters_dict.items():
+                    writer.writerow([key, val])
         # calculating average occurences for the last plot that displays average
         # occurences for each cluster over wider window, also output as a file
         df_cluster_sum = get_cluster_wide_sum(plot_selection, clusters_dict)
-        sum_name = '{}_sum_cluster_distribution_{}.tsv'.format(sample_name, region)
+        sum_name = f'{sample_name}_{kmer_length}mer_cluster_distribution_{region}.tsv'
         # find cluster with max average peak value, rank clusters by this value
         # and plot clusters in order using thie rank
         clusters_max = {cluster: max(df_cluster_sum[cluster]) for cluster in df_cluster_sum.columns}
@@ -1010,11 +1012,12 @@ def run(peak_file, sites_file, genome, genome_fai, regions_file, window, window_
             key: rank for rank, key in enumerate(sorted(clusters_max, key=clusters_max.get, reverse=True), 1)}
         # using positions and occurences each cluster gets a name
         cluster_rename = get_clusters_name(clusters_dict)
-        df_cluster_sum.rename(columns=cluster_rename).to_csv('./results/' + sum_name, sep='\t')
+        cluster_columns_rename = {c_id: (cluster_rename[c_id], list(clusters_dict[c_id])) for c_id in cluster_rename}
+        df_cluster_sum.rename(columns=cluster_columns_rename).to_csv('./results/' + sum_name, sep='\t')
         # finnaly plot all the clusters and the wider window (-150 to 100) plot
         # with average occurences
         plot_positional_distribution(
-            df_smooth, df_cluster_sum, clusters_dict, clusters_rank, sample_name, cluster_rename, region)
+            df_smooth, df_cluster_sum, clusters_dict, clusters_rank, sample_name, cluster_rename, region, kmer_length)
         plot_cp = time.time()
         print(f'Analysing {region} runtime: {((plot_cp - region_start) / 60):.2f}')
         print(f'Analysing {region} in seconds per thresholded_crosslink: {(plot_cp - region_start) / ntxn}')
@@ -1022,3 +1025,4 @@ def run(peak_file, sites_file, genome, genome_fai, regions_file, window, window_
     shutil.rmtree(TEMP_PATH)
     pbt.cleanup()
     print(f'Analysis total runtime {((time.time() - start) / 60):.2f}')
+    
