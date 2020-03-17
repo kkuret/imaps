@@ -5,6 +5,15 @@ Change Log
 All notable changes to this project are documented in this file.
 
 
+==========
+Unreleased
+==========
+
+Added
+-----
+- Add tagging instructions to contributing docs
+
+
 ==================
 0.2.3 - 2020-03-17
 ==================

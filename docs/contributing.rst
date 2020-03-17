@@ -133,6 +133,15 @@ to master::
     git merge --ff-only release-<new-version>
     git push <imaps-upstream-name> master <new-version>
 
+Tag the new release from the latest commit::
+
+    git checkout master
+    git tag -m "Version <new-version>" <new-version>
+
+Push the tag to the main imaps git repository::
+
+    git push <imaps-upstream-name> master <new-version>
+
 Now you can release the code on PyPI. Clean ``build`` directory::
 
     python setup.py clean -a
