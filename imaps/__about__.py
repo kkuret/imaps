@@ -10,7 +10,7 @@ __url__ = 'https://github.com/jernejule/imaps'
 
 try:
     # __version__ = get_distribution(__title__).version
-    __version__ = '0.2.2'
+    __version__ = '0.2.3'
 except DistributionNotFound:
     # Package is not (yet) installed.
     pass

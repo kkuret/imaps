@@ -6,6 +6,21 @@ All notable changes to this project are documented in this file.
 
 
 ==================
+0.2.3 - 2020-03-17
+==================
+
+Added
+-----
+- Add iMaps assests values in constants folder
+- Add check_assets script
+
+Changed
+-------
+- Perform subsampling in kmers script if necessary (lowering memory footprint)
+- Update naming of output files in kmer script
+
+
+==================
 0.2.2 - 2019-12-16
 ==================
 
