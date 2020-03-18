@@ -37,6 +37,9 @@ setuptools.setup(
         'seaborn',
         'sklearn',
         'resdk>=11.0.1',
+        # XXX: Temporarily pin wrapt to 1.11.x, since astroid 2.3.3
+        # has requirement wrapt==1.11.*
+        'wrapt==1.11.*',
    ],
     extras_require={
         'docs': ['sphinx_rtd_theme'],
