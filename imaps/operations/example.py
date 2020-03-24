@@ -24,6 +24,8 @@ class ExampleOperation(BaseOperation):
         self.outfile = outfile
         self.threshold = threshold
 
+        super().__init__()
+
     def validate_inputs(self):
         """Validate inputs."""
         validate_bed_file(self.sites, check_exist=True)
