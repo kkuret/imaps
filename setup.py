@@ -8,7 +8,7 @@ with open('README.rst', 'r') as fh:
 # Get package metadata from '__about__.py' file.
 about = {}
 base_dir = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(base_dir, 'imaps', '__about__.py'), 'r') as fh:
+with open(os.path.join(base_dir, 'src', 'imaps', '__about__.py'), 'r') as fh:
     exec(fh.read(), about)
 
 setuptools.setup(
@@ -24,8 +24,10 @@ setuptools.setup(
     license=about['__license__'],
     # Exclude tests from built/installed package.
     packages=setuptools.find_packages(
-        exclude=['*.tests', '*.tests.*']
+        'src',
+        exclude=['tests', 'tests.*', '*.tests', '*.tests.*']
     ),
+    package_dir={'': 'src'},
     python_requires='>=3.6, <3.8',
     install_requires=[
         'matplotlib',
