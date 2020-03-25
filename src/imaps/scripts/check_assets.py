@@ -1,10 +1,15 @@
 """Check that iMaps has all the assets that it needs to operate."""
+import resdk
 from imaps.base.constants import IMAPS_URL
 from imaps.base.constants.assets import (
-    ANNOTATION, GENOME, SEGMENT, SPECIES, STAR_INDEX, TRNA_RRNA_INDEX, TRNA_RRNA_SEQ,
+    ANNOTATION,
+    GENOME,
+    SEGMENT,
+    SPECIES,
+    STAR_INDEX,
+    TRNA_RRNA_INDEX,
+    TRNA_RRNA_SEQ,
 )
-
-import resdk
 
 
 def check_asset(res, asset_data, errors):
@@ -18,12 +23,13 @@ def check_asset(res, asset_data, errors):
 
     # 2. Check that object has correct name:
     if obj.name != asset_data["name"]:
-        errors.append('Object with slug {} has wrong name: "{}" != "{}".'.format(
-            obj.slug, obj.name, asset_data["name"]))
+        errors.append(
+            'Object with slug {} has wrong name: "{}" != "{}".'.format(obj.slug, obj.name, asset_data["name"])
+        )
 
 
 def main():
-    """Main."""
+    """Run."""
     res = resdk.Resolwe(url=IMAPS_URL)
     res.login()
 

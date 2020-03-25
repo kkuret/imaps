@@ -19,13 +19,13 @@ class ImapsTestCase(unittest.TestCase):
         if not directory:
             directory = tempfile._get_default_tempdir()
         if extension:
-            name += '.' + extension
+            name += "." + extension
 
         return os.path.join(directory, name)
 
     def create_bed_from_list(self, intervals):
         """Create BED file from a list of lists."""
-        fname = self.get_filename(extension='bed')
+        fname = self.get_filename(extension="bed")
         pbt.BedTool(pbt.create_interval_from_list(item) for item in intervals).saveas(fname)
         return fname
 

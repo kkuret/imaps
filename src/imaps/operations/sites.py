@@ -68,9 +68,9 @@ class Sites(BaseOperation):
             return False
         if read.is_unmapped:
             return False
-        if not read.has_tag('NH'):
+        if not read.has_tag("NH"):
             return False
-        if read.get_tag('NH') > self.multimax:
+        if read.get_tag("NH") > self.multimax:
             return False
 
         return True
@@ -99,7 +99,7 @@ class Sites(BaseOperation):
             elif self.group_by == "end":
                 pos = max(positions)
 
-        score = 1 / read.get_tag('NH')
+        score = 1 / read.get_tag("NH")
 
         return Site(chrom=chrom, strand=strand, pos=pos, score=score)
 
@@ -125,13 +125,8 @@ class Sites(BaseOperation):
         for chrom, data1 in self._counts.items():
             for pos, data2 in data1.items():
                 for strand, umis in data2.items():
-                    intervals.append(pbt.create_interval_from_list([
-                        chrom,
-                        pos,
-                        pos + 1,
-                        ".",
-                        str(self.get_count(umis)),
-                        strand
-                    ]))
+                    intervals.append(
+                        pbt.create_interval_from_list([chrom, pos, pos + 1, ".", str(self.get_count(umis)), strand])
+                    )
 
         pbt.BedTool(interval for interval in intervals).sort().saveas(self.output)

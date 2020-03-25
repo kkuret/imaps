@@ -2,12 +2,12 @@
 import os
 
 VALID_BED_EXTENSIONS = (
-    '.bed',
-    '.bed.gz',
+    ".bed",
+    ".bed.gz",
 )
 VALID_BAM_EXTENSIONS = (
-    '.bam',
-    '.sam',
+    ".bam",
+    ".sam",
 )
 
 

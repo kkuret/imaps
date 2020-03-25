@@ -6,7 +6,6 @@ from ngs_test_utils.testcase import NgsTestCase
 
 
 class TestSites(NgsTestCase):
-
     def setUp(self):
         self.bed = self.get_filename(extension="bed")
         self.bam = self.make_bam(
@@ -131,7 +130,7 @@ class TestSites(NgsTestCase):
     def test_run(self):
         Sites(self.bam, self.bed).run()
 
-        self.assertEqual(self.tsv_to_list(self.bed), [
-            ['chr1', '99', '100', '.', '2.0', '+'],
-            ['chr1', '275', '276', '.', '1.0', '-'],
-        ])
+        self.assertEqual(
+            self.tsv_to_list(self.bed),
+            [["chr1", "99", "100", ".", "2.0", "+"], ["chr1", "275", "276", ".", "1.0", "-"]],
+        )

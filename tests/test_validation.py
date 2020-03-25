@@ -6,7 +6,6 @@ from ngs_test_utils.testcase import NgsTestCase
 
 
 class TestValidation(NgsTestCase):
-
     def test_validate_bed_file(self):
         message = "Bed file file.txt should have a valid bed extension."
         with self.assertRaisesRegex(ValueError, message):

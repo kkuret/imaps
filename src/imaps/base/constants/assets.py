@@ -1,80 +1,35 @@
 """iMaps assets needed for normal operation."""
 
 SPECIES = [
-    'Drosophila melanogaster',
-    'Danio rerio',
-    'Escherichia coli',
-    'Homo sapiens',
-    'Mus musculus',
-    'Rattus norvegicus',
-    'Staphylococcus aureus',
-    'Saccharomyces cerevisiae',
+    "Drosophila melanogaster",
+    "Danio rerio",
+    "Escherichia coli",
+    "Homo sapiens",
+    "Mus musculus",
+    "Rattus norvegicus",
+    "Staphylococcus aureus",
+    "Saccharomyces cerevisiae",
 ]
 
 GENOME = {
-    "Drosophila melanogaster": {
-        "slug": "imaps-genome-dm",
-        "name": "DEFAULT Drosophila melanogaster genome",
-    },
-    "Danio rerio": {
-        "slug": "imaps-genome-dr",
-        "name": "DEFAULT Danio rerio genome",
-    },
-    "Escherichia coli": {
-        "slug": "imaps-genome-ec",
-        "name": "DEFAULT Escherichia coli genome",
-    },
-    "Homo sapiens": {
-        "slug": "imaps-genome-hs",
-        "name": "DEFAULT Homo sapiens genome",
-    },
-    "Mus musculus": {
-        "slug": "imaps-genome-mm",
-        "name": "DEFAULT Mus musculus genome",
-    },
-    "Rattus norvegicus": {
-        "slug": "imaps-genome-rn",
-        "name": "DEFAULT Rattus norvegicus genome",
-    },
-    "Staphylococcus aureus": {
-        "slug": "imaps-genome-sa",
-        "name": "DEFAULT Staphylococcus aureus genome",
-    },
-    "Saccharomyces cerevisiae": {
-        "slug": "imaps-genome-sc",
-        "name": "DEFAULT Saccharomyces cerevisiae genome",
-    },
+    "Drosophila melanogaster": {"slug": "imaps-genome-dm", "name": "DEFAULT Drosophila melanogaster genome"},
+    "Danio rerio": {"slug": "imaps-genome-dr", "name": "DEFAULT Danio rerio genome"},
+    "Escherichia coli": {"slug": "imaps-genome-ec", "name": "DEFAULT Escherichia coli genome"},
+    "Homo sapiens": {"slug": "imaps-genome-hs", "name": "DEFAULT Homo sapiens genome"},
+    "Mus musculus": {"slug": "imaps-genome-mm", "name": "DEFAULT Mus musculus genome"},
+    "Rattus norvegicus": {"slug": "imaps-genome-rn", "name": "DEFAULT Rattus norvegicus genome"},
+    "Staphylococcus aureus": {"slug": "imaps-genome-sa", "name": "DEFAULT Staphylococcus aureus genome"},
+    "Saccharomyces cerevisiae": {"slug": "imaps-genome-sc", "name": "DEFAULT Saccharomyces cerevisiae genome"},
 }
 
 ANNOTATION = {
-    "Drosophila melanogaster": {
-        "slug": "imaps-annotation-dm",
-        "name": "DEFAULT Drosophila melanogaster annotation",
-    },
-    "Danio rerio": {
-        "slug": "imaps-annotation-dr",
-        "name": "DEFAULT Danio rerio annotation",
-    },
-    "Escherichia coli": {
-        "slug": "imaps-annotation-ec",
-        "name": "DEFAULT Escherichia coli annotation",
-    },
-    "Homo sapiens": {
-        "slug": "imaps-annotation-hs",
-        "name": "DEFAULT Homo sapiens annotation",
-    },
-    "Mus musculus": {
-        "slug": "imaps-annotation-mm",
-        "name": "DEFAULT Mus musculus annotation",
-    },
-    "Rattus norvegicus": {
-        "slug": "imaps-annotation-rn",
-        "name": "DEFAULT Rattus norvegicus annotation",
-    },
-    "Staphylococcus aureus": {
-        "slug": "imaps-annotation-sa",
-        "name": "DEFAULT Staphylococcus aureus annotation",
-    },
+    "Drosophila melanogaster": {"slug": "imaps-annotation-dm", "name": "DEFAULT Drosophila melanogaster annotation"},
+    "Danio rerio": {"slug": "imaps-annotation-dr", "name": "DEFAULT Danio rerio annotation"},
+    "Escherichia coli": {"slug": "imaps-annotation-ec", "name": "DEFAULT Escherichia coli annotation"},
+    "Homo sapiens": {"slug": "imaps-annotation-hs", "name": "DEFAULT Homo sapiens annotation"},
+    "Mus musculus": {"slug": "imaps-annotation-mm", "name": "DEFAULT Mus musculus annotation"},
+    "Rattus norvegicus": {"slug": "imaps-annotation-rn", "name": "DEFAULT Rattus norvegicus annotation"},
+    "Staphylococcus aureus": {"slug": "imaps-annotation-sa", "name": "DEFAULT Staphylococcus aureus annotation"},
     "Saccharomyces cerevisiae": {
         "slug": "imaps-annotation-sc",
         "name": "DEFAULT Saccharomyces cerevisiae annotation",
@@ -172,26 +127,11 @@ TRNA_RRNA_SEQ = {
         "slug": "imaps-trna-rrna-seq-dm",
         "name": "DEFAULT Drosophila melanogaster tRNA/rRNA sequences",
     },
-    "Danio rerio": {
-        "slug": "imaps-trna-rrna-seq-dr",
-        "name": "DEFAULT Danio rerio tRNA/rRNA sequences",
-    },
-    "Escherichia coli": {
-        "slug": "imaps-trna-rrna-seq-ec",
-        "name": "DEFAULT Escherichia coli tRNA/rRNA sequences",
-    },
-    "Homo sapiens": {
-        "slug": "imaps-trna-rrna-seq-hs",
-        "name": "DEFAULT Homo sapiens tRNA/rRNA sequences",
-    },
-    "Mus musculus": {
-        "slug": "imaps-trna-rrna-seq-mm",
-        "name": "DEFAULT Mus musculus tRNA/rRNA sequences",
-    },
-    "Rattus norvegicus": {
-        "slug": "imaps-trna-rrna-seq-rn",
-        "name": "DEFAULT Rattus norvegicus tRNA/rRNA sequences",
-    },
+    "Danio rerio": {"slug": "imaps-trna-rrna-seq-dr", "name": "DEFAULT Danio rerio tRNA/rRNA sequences"},
+    "Escherichia coli": {"slug": "imaps-trna-rrna-seq-ec", "name": "DEFAULT Escherichia coli tRNA/rRNA sequences"},
+    "Homo sapiens": {"slug": "imaps-trna-rrna-seq-hs", "name": "DEFAULT Homo sapiens tRNA/rRNA sequences"},
+    "Mus musculus": {"slug": "imaps-trna-rrna-seq-mm", "name": "DEFAULT Mus musculus tRNA/rRNA sequences"},
+    "Rattus norvegicus": {"slug": "imaps-trna-rrna-seq-rn", "name": "DEFAULT Rattus norvegicus tRNA/rRNA sequences"},
     "Staphylococcus aureus": {
         "slug": "imaps-trna-rrna-seq-sa",
         "name": "DEFAULT Staphylococcus aureus tRNA/rRNA sequences",
