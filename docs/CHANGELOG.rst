@@ -5,13 +5,20 @@ Change Log
 All notable changes to this project are documented in this file.
 
 
-==========
-Unreleased
-==========
+==================
+0.3.0 - 2020-03-29
+==================
 
 Added
 -----
 - Add tagging instructions to contributing docs
+- Add Sites analysis
+
+Changed
+-------
+- Reorganize packet structure
+- Change testing tools. No we use black and flake8 instead of pylint.
+  Also, all code is now formatted with black
 
 
 ==================
