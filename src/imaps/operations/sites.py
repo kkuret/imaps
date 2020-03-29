@@ -125,8 +125,8 @@ class Sites(BaseOperation):
         for chrom, data1 in self._counts.items():
             for pos, data2 in data1.items():
                 for strand, umis in data2.items():
-                    intervals.append(
-                        pbt.create_interval_from_list([chrom, pos, pos + 1, ".", str(self.get_count(umis)), strand])
-                    )
+                    # BED6 file needs an integer value for the "score" column
+                    score = str(int(self.get_count(umis)))
+                    intervals.append(pbt.create_interval_from_list([chrom, pos, pos + 1, ".", score, strand]))
 
         pbt.BedTool(interval for interval in intervals).sort().saveas(self.output)

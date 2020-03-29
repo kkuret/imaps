@@ -131,6 +131,5 @@ class TestSites(NgsTestCase):
         Sites(self.bam, self.bed).run()
 
         self.assertEqual(
-            self.tsv_to_list(self.bed),
-            [["chr1", "99", "100", ".", "2.0", "+"], ["chr1", "275", "276", ".", "1.0", "-"]],
+            self.tsv_to_list(self.bed), [["chr1", "99", "100", ".", "2", "+"], ["chr1", "275", "276", ".", "1", "-"]],
         )
