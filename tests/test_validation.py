@@ -1,7 +1,12 @@
 """Test validation functions."""
 # pylint: disable=missing-docstring
-
-from imaps.base.validation import validate_bam_file, validate_bed_file, validate_integer, validate_string
+from imaps.base.validation import (
+    validate_bam_file,
+    validate_bed_file,
+    validate_date,
+    validate_integer,
+    validate_string,
+)
 from ngs_test_utils.testcase import NgsTestCase
 
 
@@ -42,9 +47,20 @@ class TestValidation(NgsTestCase):
         validate_string("A")
         validate_string("B", choices=["A", "B"])
 
+        validate_string("", allow_empty=True)
+
     def test_validate_integer(self):
         message = "Value AAA should be an integer."
         with self.assertRaisesRegex(ValueError, message):
             validate_integer("AAA")
 
         validate_integer(123)
+
+    def test_validate_date(self):
+        message = "Incorrect date format \\(1.2.1990\\), should be YYYY-MM-DD."
+        with self.assertRaisesRegex(ValueError, message):
+            validate_date("1.2.1990")
+
+        validate_date("1900-2-1")
+
+        validate_date("", allow_empty=True)

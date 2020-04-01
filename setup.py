@@ -39,6 +39,7 @@ setuptools.setup(
         # XXX: Temporarily pin wrapt to 1.11.x, since astroid 2.3.3
         # has requirement wrapt==1.11.*
         "wrapt==1.11.*",
+        "xlrd",
     ],
     extras_require={
         "docs": ["sphinx_rtd_theme"],
