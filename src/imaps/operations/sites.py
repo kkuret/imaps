@@ -101,6 +101,10 @@ class Sites(BaseOperation):
 
         score = 1 / read.get_tag("NH")
 
+        # Handle case when read alligns exactly on start of chromosome:
+        if pos < 0:
+            pos = 0
+
         return Site(chrom=chrom, strand=strand, pos=pos, score=score)
 
     def get_umi(self, read):
