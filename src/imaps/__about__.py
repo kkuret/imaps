@@ -4,11 +4,11 @@
 __title__ = "imaps"
 __summary__ = "Bioinformatic pipelines for analysis of CLIP data"
 __url__ = "https://github.com/jernejule/imaps"
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __author__ = "Ule lab and Genialis, Inc."
 __email__ = " jernej.ule@crick.ac.uk"
 __license__ = "Apache 2.0"
-__copyright__ = "2019, " + __author__
+__copyright__ = "2019-2020, " + __author__
 
 __all__ = (
     "__title__",

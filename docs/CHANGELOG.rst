@@ -4,13 +4,15 @@ Change Log
 
 All notable changes to this project are documented in this file.
 
-==========
-Unreleased
-==========
+
+==================
+0.4.0 - 2020-05-19
+==================
 
 Added
 -----
 - Add DescriptorSheet object
+
 
 ==================
 0.3.0 - 2020-03-29
