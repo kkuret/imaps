@@ -73,10 +73,12 @@ import pandas as pd
 import pybedtools as pbt
 import scipy
 import seaborn as sns
+import textdistance as td
 from plumbum import local
 from plumbum.cmd import sort, zcat
-from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
+from sklearn.cluster import AffinityPropagation
+from sklearn.exceptions import ConvergenceWarning
+from sklearn.utils._testing import ignore_warnings
 
 REGIONS = ["whole_gene", "intron", "UTR3", "other_exon", "UTR5", "ncRNA", "intergenic", "genome"]
 REGION_SITES = {
@@ -429,7 +431,7 @@ def count_kmers(sequences, k_length):
     return kmers
 
 
-def pos_count_kmer(seqs, k_length, window, kmer_list=False):
+def pos_count_kmer(seqs, k_length, window, repeats, kmer_list=False):
     """Get number of occurences of each kmer for each position.
 
     Alternativly, if kmer_list is defined, it returns positional counts
@@ -441,11 +443,15 @@ def pos_count_kmer(seqs, k_length, window, kmer_list=False):
         possible_kmers = kmer_list
     else:
         possible_kmers = []
-        for i in product("ACGT", repeat=k_length):
-            possible_kmers.append("".join(i))
+        if repeats != "repeats_only":
+            for i in product("ACGT", repeat=k_length):
+                possible_kmers.append("".join(i))
+        if repeats == "repeats_only" or repeats == "masked":
+            for i in product("acgt", repeat=k_length):
+                possible_kmers.append("".join(i))
     kmer_pos_count = {x: zero_counts.copy() for x in possible_kmers}
     for sequence in seqs:
-        for i in range(k_length, len(sequence) - k_length):
+        for i in range(k_length, len(sequence) - k_length + 1):
             kmer = sequence[i : i + k_length]
             relative_pos = i - window - k_length + shift - 1
             try:
@@ -529,36 +535,80 @@ def get_top_n_kmers(kmer_count, num):
     return [item[0] for item in sorted(kmer_count.items(), key=lambda x: x[1], reverse=True)[:num]]
 
 
-def get_clustering(kmer_pos_count, clustering_pm, smoot=6, clust=3):
+@ignore_warnings(category=ConvergenceWarning)
+def get_clustering(kmer_pos_count, x1, x2, kmer_length, window, smoot, n_clusters):
     """Smoothen positional data for each kmer and then cluster kmers.
 
-    Prior to clustering PCA is ran to reduce number of dimensions. Return smooth
-    dataframe and a dictionary of cluster with belonging kmers.
+    Prior to clustering, similarities between sequences (using Jaccard
+    index), positional distributions (using correlations), maximal values
+    and positions of masimal valus are calculated. Return smooth dataframe
+    and a dictionary of cluster with belonging kmers. Also has a few
+    inputs and outputs used only for optimisation of weights. These weights
+    purpose is to optimise clustering for a given number of clusters.
     """
     # read kmer_pos_count dictionary into a data frame
     df_in = pd.DataFrame(kmer_pos_count)
-    # smoothen
     df_smooth = df_in.rolling(smoot, center=True, win_type="triang").mean()
     # slicing drops edge values that get NaN due to rolling mean
     df_smooth = df_smooth.iloc[int(smoot / 2) : -(int(smoot / 2) + 1), :]
-    df_t = df_smooth.T
-    df_cl = pd.DataFrame(clustering_pm).T
-    df_cl = df_cl[df_cl.index.isin(df_t.index)]
-    pca = PCA(n_components=4, svd_solver="full")
-    principal_components = pca.fit_transform(df_cl)
-    principal_df = pd.DataFrame(
-        data=principal_components,
-        columns=["principal component 1", "principal component 2", "principal component 3", "principal component 4"],
-    )
-    kmeans = KMeans(n_clusters=clust, random_state=4242).fit(principal_df)
-    # append lists of kmers belonging to each cluster
-    df_map = pd.DataFrame()
-    df_map["data_index"] = df_cl.index.values
-    df_map["cluster"] = kmeans.labels_
+    kmers = np.asarray(list(kmer_pos_count.keys()))
+    jaccard_similarity = np.array([[td.jaccard.similarity(k1, k2) for k1 in kmers] for k2 in kmers])
+    array_test = df_smooth.loc[-window:window, :].T.to_numpy()
+    correlation_similarity = (np.corrcoef(array_test) + 1) / 2
+    combined1 = np.add(jaccard_similarity, correlation_similarity * kmer_length) / (kmer_length + 1)
+    max_count_similarity = [
+        np.array_split(
+            [min(np.max(i), np.max(j)) / max(np.max(i), np.max(j)) for i in array_test for j in array_test],
+            len(kmer_pos_count),
+        )
+    ]
+    max_pos_similarity = [
+        [y * x1 for y in w]
+        for w in np.array_split(
+            [1 - abs(i - j) / (2 * window) for i in df_in.idxmax().to_numpy() for j in df_in.idxmax().to_numpy()],
+            len(kmer_pos_count),
+        )
+    ]
+    combined2 = np.add(max_count_similarity, max_pos_similarity)[0] / (1 + x1)
+    combined3 = np.add(combined1, combined2 * x2) / (1 + x2)
+    m = AffinityPropagation(affinity="precomputed", damping=0.5, max_iter=1000, convergence_iter=100)
+    out = m.fit(combined3)
     c_dict = {}
-    for i in range(clust):
-        c_dict["cluster" + str(i)] = df_map[df_map.cluster == i].set_index("data_index").index.values
-    return df_smooth, c_dict
+    cluster_medians_std = []
+    for cluster_id in np.unique(out.labels_):
+        cluster = list(np.unique(kmers[np.nonzero(out.labels_ == cluster_id)]))
+        cluster_medians = df_smooth.loc[-window:window, cluster].median()
+        cluster_medians_std.append(cluster_medians.std())
+        c_dict[cluster_id] = cluster
+    return df_smooth, c_dict, len(np.unique(out.labels_)), sum(cluster_medians_std)
+
+
+def optimize_clustering(kmer_pos_count, kmer_length, window, smoothing, clusters):
+    """Optimize clustering."""
+    optimal_no_clusters = []
+    for i in np.linspace(0, 10, 100):
+        for j in np.linspace(0, 10, 100):
+            df_smooth, clusters_dict, no_of_clusters, cluster_medians_std = get_clustering(
+                kmer_pos_count, i, j, kmer_length, window, smoothing, clusters
+            )
+            optimal_no_clusters.append((no_of_clusters, i, cluster_medians_std, j))
+    filtered_no_clusters = []
+    final_no_clusters = clusters
+    while len(filtered_no_clusters) == 0 and final_no_clusters != 0:
+        for c in optimal_no_clusters:
+            if c[0] == final_no_clusters:
+                filtered_no_clusters.append(c)
+        final_no_clusters -= 1
+    lowest_std = 99999
+    optimized_koef1 = 0
+    optimized_koef2 = 0
+    for c in filtered_no_clusters:
+        if c[2] < lowest_std:
+            lowest_std = c[2]
+            optimized_koef1 = c[1]
+            optimized_koef2 = c[3]
+    print(f"Found {final_no_clusters + 1} clusters, optimized parameters: {optimized_koef1}, {optimized_koef2}")
+    return get_clustering(kmer_pos_count, optimized_koef1, optimized_koef2, kmer_length, window, smoothing, clusters)
 
 
 def substrings(string):
@@ -724,7 +774,7 @@ def get_clusters_name(c_dict):
                         final_list.append(base[0])
                     elif len(base) > 1:
                         final_list.append(f'[{"".join(base)}]')
-                final_str = "".join(final_list).replace("ACGU", "N")
+                final_str = "".join(final_list).replace("ACGU", "N").replace("acgu", "n")
                 if len(final_list) == 1:
                     c_con_dict[cluster_id] = kmers_list[0]
                 elif final_list and (final_str not in c_con_dict.values()):
@@ -805,12 +855,12 @@ def run(
     kmer_length,
     top_n,
     percentile,
-    min_relativ_occurence,
     clusters,
     smoothing,
     all_outputs=False,
     regions=None,
     subsample=True,
+    repeats="masked",
 ):
     """Start the analysis.
 
@@ -903,11 +953,15 @@ def run(
         )
         # get sequences around all thresholded crosslinks
         sequences = get_sequences(sites, genome, genome_fai, window_distal + kmer_length, window_distal + kmer_length)
+        if repeats == "unmasked":
+            sequences = [s.upper() for s in sequences]
         get_sequences_cp = time.time()
         # get positional counts for all kmers around thresholded crosslinks
-        kmer_pos_count_t = pos_count_kmer(sequences, kmer_length, window_distal)
+        kmer_pos_count_t = pos_count_kmer(sequences, kmer_length, window_distal, repeats=repeats)
         print(f"Kmer positional counting runtime: {((time.time() - get_sequences_cp) / 60):.2f} min")
         kmer_pos_count = {key.replace("T", "U"): value for key, value in kmer_pos_count_t.items()}
+        if repeats == "masked" or repeats == "repeats_only":
+            kmer_pos_count = {key.replace("t", "u"): value for key, value in kmer_pos_count_t.items()}
         # get position where the kmer count is maximal
         max_p = get_max_pos(kmer_pos_count, window_peak_l=15, window_peak_r=15)
         # prepare dataframe for outfile
@@ -927,12 +981,14 @@ def run(
                 try:
                     rtxn[motif][pos] = count / avg_distal_occ[motif]
                 except ZeroDivisionError:
-                    rtxn[motif][pos] = count
+                    rtxn[motif][pos] = count / 0.005
         rtxn_cp = time.time()
         # get positional counts for all kmers around all crosslink not in peaks
-        ref_pc_t = pos_count_kmer(reference_sequences, kmer_length, window)
+        ref_pc_t = pos_count_kmer(reference_sequences, kmer_length, window, repeats=repeats)
         print(f"Reference positional counts runtime: {((time.time() - rtxn_cp) / 60):.2f} min")
         ref_pc = {key.replace("T", "U"): value for key, value in ref_pc_t.items()}
+        if repeats == "masked" or repeats == "repeats_only":
+            ref_pc = {key.replace("t", "u"): value for key, value in ref_pc_t.items()}
         # occurences of kmers on each position around all crosslinks not in
         # peaks (reference) relative to distal occurences
         roxn = {x: {} for x in ref_pc}
@@ -941,51 +997,69 @@ def run(
                 try:
                     roxn[motif][pos] = (count * ntxn) / (avg_distal_occ[motif] * noxn)
                 except ZeroDivisionError:
-                    roxn[motif][pos] = (count * ntxn) / noxn
-        # get all positions around thresholded crosslinks between -60 and 60
-        # where relative occurence is higher then an arbitrary value (minimal
-        # relative occurence), default 2
-        prtxn = {x: [] for x in rtxn}
-        window_inner = int(window / 3)
-        relevant_pos_inner = list(
-            range(-window_inner + int((kmer_length + 1) / 2), window_inner + 1 + int((kmer_length + 1) / 2))
-        )
-        relevant_pos_outer = list(range(-window + int((kmer_length + 1) / 2), window + 1 + int((kmer_length + 1) / 2)))
-        for i in relevant_pos_outer:
-            if i in relevant_pos_inner:
-                for kmer, posm in rtxn.items():
-                    prtxn[kmer].append(i)
-            else:
-                for kmer, posm in rtxn.items():
-                    if posm[i] > min_relativ_occurence:
-                        prtxn[kmer].append(i)
-        # prepare relevant positions obtained from previous step for output
-        # table and add it to the output table
-        prtxn_concat = {}
-        for key, value in prtxn.items():
-            prtxn_concat[key] = ", ".join([str(i) for i in value])
-        df_prtxn = pd.DataFrame.from_dict(prtxn_concat, orient="index", columns=["prtxn"])
-        df_out = pd.merge(df_out, df_prtxn, left_index=True, right_index=True)
-        prtxn_cp = time.time()
+                    roxn[motif][pos] = (count * ntxn) / (noxn * 0.005)
+
         # for z-score calculation random samples from crosslink out of peaks
         # (reference) are used and for each sample we calculate average relative
         # occurences for each kmer on relevant positions and add them to a list
         # for calculation of averages and standard deviations
-        random_aroxn = []
+        random_roxn = []
         for _ in range(100):
             random_seqs = random.sample(reference_sequences, len(sites))
-            random_kmer_pos_count_t = pos_count_kmer(random_seqs, kmer_length, window)
+            random_kmer_pos_count_t = pos_count_kmer(random_seqs, kmer_length, window, repeats=repeats)
             random_kmer_pos_count = {key.replace("T", "U"): value for key, value in random_kmer_pos_count_t.items()}
+            if repeats == "masked" or repeats == "repeats_only":
+                random_kmer_pos_count = {
+                    key.replace("t", "u"): value for key, value in random_kmer_pos_count_t.items()
+                }
             roxn_sample = {x: {} for x in random_kmer_pos_count}
             for motif, pos_m in random_kmer_pos_count.items():
                 for pos, count in pos_m.items():
                     try:
                         roxn_sample[motif][pos] = count / avg_distal_occ[motif]
                     except ZeroDivisionError:
-                        roxn_sample[motif][pos] = count
-            aroxn_sample = {x: np.mean([roxn_sample[x][y] for y in prtxn[x]]) for x in roxn_sample}
+                        roxn_sample[motif][pos] = count / 0.005
+            random_roxn.append(roxn_sample)
+
+        temp_combined_roxn = {}
+        if kmer_length <= 4:
+            prtxn_conf = 66
+        elif kmer_length <= 6:
+            prtxn_conf = 80
+        else:
+            prtxn_conf = 99
+        for key in list(random_roxn[0].keys()):
+            temp_roxn = []
+            for sample in random_roxn:
+                temp_roxn.append(sample[key])
+            for pos_dict in temp_roxn:
+                for pos, val in pos_dict.items():
+                    previous = temp_combined_roxn.get(pos, [])
+                    try:
+                        previous.append(val)
+                        temp_combined_roxn[pos] = previous
+                    except KeyError:
+                        continue
+        threshold = {pos: np.percentile(values, prtxn_conf, axis=0) for pos, values in temp_combined_roxn.items()}
+        prtxn = {x: [] for x in rtxn}
+        for kmer, posm in rtxn.items():
+            for pos, val in posm.items():
+                try:
+                    if abs(pos) < window and val >= threshold[pos]:
+                        prtxn[kmer].append(pos)
+                except KeyError:
+                    pass
+        random_aroxn = []
+        for roxn_sample in random_roxn:
+            aroxn_sample = {
+                x: np.mean([roxn_sample[x][y] for y in prtxn[x] if y in roxn_sample[x].keys()]) for x in roxn_sample
+            }
             random_aroxn.append(aroxn_sample)
-        print(f"Analysing random samples runtime: {((time.time() - prtxn_cp) / 60):.2f} min")
+        prtxn_concat = {}
+        for key, value in prtxn.items():
+            prtxn_concat[key] = ", ".join([str(i) for i in value])
+        df_prtxn = pd.DataFrame.from_dict(prtxn_concat, orient="index", columns=["prtxn"])
+        df_out = pd.merge(df_out, df_prtxn, left_index=True, right_index=True)
         # calculate average relative occurences for each kmer around thresholded
         # crosslinks across relevant positions and add it to outfile table
         artxn = {x: np.mean([rtxn[x][y] for y in prtxn[x]]) for x in rtxn}
@@ -993,7 +1067,7 @@ def run(
         df_out = pd.merge(df_out, df_artxn, left_index=True, right_index=True)
         # calculate average relative occurences for each kmer around reference
         # crosslinks across relevant positions and add it to outfile table
-        aroxn = {x: np.mean([roxn[x][y] for y in prtxn[x]]) for x in roxn}
+        aroxn = {x: np.mean([roxn[x][y] for y in prtxn[x] if y in roxn[x].keys()]) for x in roxn}
         df_aroxn = pd.DataFrame.from_dict(aroxn, orient="index", columns=["aroxn"])
         df_out = pd.merge(df_out, df_aroxn, left_index=True, right_index=True)
         # calculate log2 of ratio between average relative occurences between
@@ -1022,7 +1096,7 @@ def run(
             try:
                 z_score[key] = (artxn[key] - value) / random_std[key]
             except KeyError:
-                print(f"Warning: {key} missing from artxn")
+                pass
         df_z_score = pd.DataFrame.from_dict(z_score, orient="index", columns=["z-score"])
         df_out = pd.merge(df_out, df_z_score, left_index=True, right_index=True, how="outer")
         # using z-score we can also calculate p-values for each motif which are
@@ -1048,14 +1122,9 @@ def run(
         df_out.to_csv(
             f"./results/{sample_name}_{kmer_length}mer_distribution_{region}.tsv", sep="\t", float_format="%.8f"
         )
-        kmer_occ_per_txl_ln = {x: {} for x in kmer_occ_per_txl}
-        for motif, pos_m in kmer_occ_per_txl.items():
-            for pos, count in pos_m.items():
-                if pos in range(-48, 51):
-                    kmer_occ_per_txl_ln[motif][pos] = np.log(count + 1)
         plot_selection_unsorted = {kmer: values for kmer, values in kmer_occ_per_txl.items() if kmer in top_kmers}
         plot_selection = {k: plot_selection_unsorted[k] for k in top_kmers}
-        df_smooth, clusters_dict = get_clustering(plot_selection, kmer_occ_per_txl_ln, smoothing, clusters)
+        df_smooth, clusters_dict, _, _ = optimize_clustering(plot_selection, kmer_length, window, smoothing, clusters)
         # for meta analysis clusters are also output in a file
         if all_outputs:
             with open(f"./results/{sample_name}_{region}_clusters.csv", "w", newline="") as file:

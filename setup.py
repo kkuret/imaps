@@ -38,6 +38,7 @@ setuptools.setup(
         "resdk>=11.0.1",
         # XXX: Temporarily pin wrapt to 1.11.x, since astroid 2.3.3
         # has requirement wrapt==1.11.*
+        "textdistance",
         "wrapt==1.11.*",
         "xlrd",
     ],
