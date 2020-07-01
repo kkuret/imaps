@@ -6,6 +6,20 @@ All notable changes to this project are documented in this file.
 
 
 ==================
+0.5.0 - 2020-07-01
+==================
+
+Changed
+-------
+- Update kmers.py script:
+
+  - Change the way prtxn are defined
+  - Allow using repeat masked genome
+  - Improve clustering of top kmers
+  - Optimise top motifs clustering
+
+
+==================
 0.4.0 - 2020-05-19
 ==================
 
