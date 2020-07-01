@@ -6,6 +6,15 @@ All notable changes to this project are documented in this file.
 
 
 ==================
+0.5.1 - 2020-07-01
+==================
+
+Fixed
+-----
+- Pin ``scikit-learn`` version to ``0.22.1``
+
+
+==================
 0.5.0 - 2020-07-01
 ==================
 
