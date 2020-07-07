@@ -6,6 +6,16 @@ All notable changes to this project are documented in this file.
 
 
 ==================
+0.5.2 - 2020-07-07
+==================
+
+Changed
+-------
+- Use custom genome index in PEKE
+- Add automated test with GitHub actions
+
+
+==================
 0.5.1 - 2020-07-01
 ==================
 
