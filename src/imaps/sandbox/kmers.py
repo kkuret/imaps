@@ -949,10 +949,12 @@ def run(
             reference.saveas(f"./results/{sample_name}_oxn_{region}.bed")
         # get sequences around all crosslinks not in peaks
         reference_sequences = get_sequences(
-            reference, genome, genome_fai, window + kmer_length, window + kmer_length, merge_overlaps=False
+            reference, genome, genome_chr_sizes, window + kmer_length, window + kmer_length, merge_overlaps=False
         )
         # get sequences around all thresholded crosslinks
-        sequences = get_sequences(sites, genome, genome_fai, window_distal + kmer_length, window_distal + kmer_length)
+        sequences = get_sequences(
+            sites, genome, genome_chr_sizes, window_distal + kmer_length, window_distal + kmer_length
+        )
         if repeats == "unmasked":
             sequences = [s.upper() for s in sequences]
         get_sequences_cp = time.time()
