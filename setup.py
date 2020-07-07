@@ -50,7 +50,7 @@ setuptools.setup(
             "check-manifest",
             "docutils",
             "flake8",
-            "isort",
+            "isort<5.0.0",
             "ngs-test-utils",
             "pydocstyle",
             "pytest-cov",
