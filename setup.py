@@ -25,7 +25,7 @@ setuptools.setup(
     # Exclude tests from built/installed package.
     packages=setuptools.find_packages("src", exclude=["tests", "tests.*", "*.tests", "*.tests.*"]),
     package_dir={"": "src"},
-    python_requires=">=3.6, <3.8",
+    python_requires=">=3.6, <3.9",
     install_requires=[
         "matplotlib",
         "numpy",
