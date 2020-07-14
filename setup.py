@@ -29,7 +29,7 @@ setuptools.setup(
     install_requires=[
         "matplotlib",
         "numpy",
-        "pandas==0.24.2",
+        "pandas>=1.0.0",
         "plumbum",
         "pybedtools",
         "scipy",
