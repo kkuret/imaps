@@ -22,6 +22,12 @@ GENOME = {
     "Saccharomyces cerevisiae": {"slug": "imaps-genome-sc", "name": "DEFAULT Saccharomyces cerevisiae genome"},
 }
 
+MASKED_GENOME = {
+    "Homo sapiens": {"slug": "imaps-genome-masked-hs", "name": "DEFAULT Homo sapiens MASKED genome"},
+    "Mus musculus": {"slug": "imaps-genome-masked-mm", "name": "DEFAULT Mus musculus MASKED genome"},
+    "Rattus norvegicus": {"slug": "imaps-genome-masked-rn", "name": "DEFAULT Rattus norvegicus MASKED genome"},
+}
+
 ANNOTATION = {
     "Drosophila melanogaster": {"slug": "imaps-annotation-dm", "name": "DEFAULT Drosophila melanogaster annotation"},
     "Danio rerio": {"slug": "imaps-annotation-dr", "name": "DEFAULT Danio rerio annotation"},

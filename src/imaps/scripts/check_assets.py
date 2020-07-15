@@ -4,6 +4,7 @@ from imaps.base.constants import IMAPS_URL
 from imaps.base.constants.assets import (
     ANNOTATION,
     GENOME,
+    MASKED_GENOME,
     SEGMENT,
     SPECIES,
     STAR_INDEX,
@@ -15,6 +16,9 @@ from imaps.base.constants.assets import (
 def check_asset(res, asset_data, errors):
     """Check single asset."""
     # 1. Check that object exists:
+    if not asset_data:
+        return
+
     try:
         obj = res.data.get(asset_data["slug"])
     except LookupError:
@@ -37,6 +41,7 @@ def main():
 
     for species in SPECIES:
         check_asset(res, GENOME[species], errors)
+        check_asset(res, MASKED_GENOME.get(species, ""), errors)
         check_asset(res, ANNOTATION[species], errors)
         check_asset(res, SEGMENT[species], errors)
         check_asset(res, STAR_INDEX[species], errors)
