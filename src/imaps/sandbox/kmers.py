@@ -383,6 +383,8 @@ def get_all_sites(s_file):
     df_out = pd.DataFrame(columns=["chrom", "start", "end", "name", "score", "strand", "feature", "attributes"])
     for region in REGIONS_QUANTILE:
         df_reg = intersect_merge_info(region, s_file)
+        if df_reg is None:
+            return
         if df_reg.empty:
             continue
         if region == "cds_utr_ncrna":
@@ -857,10 +859,10 @@ def run(
     percentile,
     clusters,
     smoothing,
-    all_outputs=False,
+    all_outputs=True,
     regions=None,
     subsample=True,
-    repeats="masked",
+    repeats="tajno geslo"
 ):
     """Start the analysis.
 
@@ -878,8 +880,6 @@ def run(
     - top_n: number of kmers ranked by z-score in descending order for
       clustering and plotting (default 20)
     - percentile: used for thresholding crosslinks (default 0.7)
-    - min_relative_occurence: ratio of kmer distribution around (thresholded)
-      crosslinks to distal occurrences (default 2)
     - clusters: number of clusters of kmers(default 5)
     - smoothing: window used for smoothing kmer positional distribution curves
     (default 6)
@@ -903,10 +903,10 @@ def run(
     }
     print("Getting thresholded crosslinks")
     df_txn = get_threshold_sites(sites_file, percentile=percentile)
-    print(f"Thresholding runtime: {((time.time() - start) / 60):.2f} min for {len(df_txn)} thresholded crosslinks")
     if df_txn is None:
         print("Not able to find any thresholded sites.")
         return
+    print(f"Thresholding runtime: {((time.time() - start) / 60):.2f} min for {len(df_txn)} thresholded crosslinks")
     genome_chr_sizes = "{}genome.sizes".format(TEMP_PATH)
     cut = local["cut"]
     make_genome_sz = cut("-f1,2", genome_fai)
@@ -915,6 +915,9 @@ def run(
     df_txn = remove_chr(df_txn, "{}genome.sizes".format(TEMP_PATH))
     checkpoint1 = time.time()
     df_xn = get_all_sites(sites_file)
+    if df_xn is None:
+        print("Not able to find any total sites.")
+        return
     print(f"{len(df_xn)} total sites. All sites taging runtime: {((time.time() - checkpoint1) / 60):.2f} min")
     for region in regions:
         region_start = time.time()
@@ -923,6 +926,10 @@ def run(
         print(f"{len(df_sites)} thresholded sites on {region}")
         df_xn_region = df_xn.loc[df_xn["feature"].isin(REGION_SITES[region])]
         print(f"{len(df_xn_region)} all sites on {region}")
+        sites = pbt.BedTool.from_dataframe(df_sites[["chrom", "start", "end", "name", "score", "strand"]])
+        # Intersect tXn with peak_file or narrowpeaks and change back to df for subsampling
+        narrow_sites1 = intersect(peak_file, sites)
+        df_sites = narrow_sites1.to_dataframe(names=["chrom", "start", "end", "name", "score", "strand"], dtype={"chrom": str, "start": int, "end": int, "name": str, "score": float, "strand": str},)
         # subsample in order to keer RAM and time complexity reasonable
         if subsample:
             df_sites = subsample_region(df_sites, region, 1000000)
@@ -1051,6 +1058,11 @@ def run(
                         prtxn[kmer].append(pos)
                 except KeyError:
                     pass
+        #Assign the max_p to kmers with empty prtxn list
+        for i, val in prtxn.items():
+            if len(val) == 0:
+                val.append(max_p[i])
+
         random_aroxn = []
         for roxn_sample in random_roxn:
             aroxn_sample = {
@@ -1112,7 +1124,6 @@ def run(
         top_kmers = kmers_order_of_enrichment[:top_n]
         # normalize kmer occurences by number of thresholded crosslinks for
         # easier comparison across different samples
-        ntxn = len(sites)
         kmer_occ_per_txl = {x: {} for x in kmer_pos_count}
         for motif, pos_m in kmer_pos_count.items():
             for pos, count in pos_m.items():
@@ -1120,7 +1131,17 @@ def run(
         df_kmer_occ_per_txl = pd.DataFrame.from_dict(kmer_occ_per_txl, orient="index")
         exported_columns = [i for i in range(-48, 51)]
         df_kmer_occ_per_txl = df_kmer_occ_per_txl[exported_columns]
+        # Save average distal occurrence (DtXn) and ntxn into tsv file.
+        df_distal = pd.DataFrame.from_dict(avg_distal_occ, orient='index', columns=["DtXn"])
+        df_out = pd.merge(df_out, df_distal, left_index=True, right_index=True, how="outer")
         df_out = pd.merge(df_out, df_kmer_occ_per_txl, left_index=True, right_index=True, how="outer")
+        df_out["ntxn"] = ntxn
+        # Save additional tsv file with rtxn values (can potentially be used for heatmaps)
+        df_rtxn = pd.DataFrame.from_dict(rtxn, orient="index")
+        df_rtxn = df_rtxn[exported_columns]
+        df_rtxn.to_csv(
+            f"./results/{sample_name}_{kmer_length}mer_rtxn_{region}.tsv", sep="\t", float_format="%.8f"
+        )
         df_out.to_csv(
             f"./results/{sample_name}_{kmer_length}mer_distribution_{region}.tsv", sep="\t", float_format="%.8f"
         )
